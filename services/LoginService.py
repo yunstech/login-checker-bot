@@ -12,6 +12,8 @@ def loginCheck(username: str, password: str, product: str, endpoint: str):
         return edlinkCheck(username, password, endpoint)
     elif product == "siakadcloud":
         return siakadcloudCheck(username, password, endpoint)
+    elif product == "gofeedercloud":
+        return gofeederCheck(username, password, endpoint)
 
 def edlinkCheck(username: str, password: str, endpoint: str):
     with sync_playwright() as p:
@@ -70,6 +72,37 @@ def siakadcloudCheck(username: str, password: str, endpoint: str):
                 print(request.json())
                 browser.close()
                 print("Login failed, check credentials.")
+                return {"status": "failure", "reason": "Invalid credentials"}
+        except Exception as e:
+            browser.close()
+            return {"status": "error", "reason": str(e)}
+
+def gofeederCheck(username: str, password: str, endpoint: str):
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context()
+        page = context.new_page()
+        try:
+            page.goto(endpoint)
+            page.fill('input[name="username"]', username)
+            page.fill('input[name="password"]', password)
+            page.click('button[type="submit"]')
+            page.wait_for_load_state("networkidle")
+            if "/index.php/home" in page.url:
+                print("Login successful, proceeding to dashboard.")
+                request = requests.post(f"{WEB_APP_API}/api/update-credential-status",
+                    json={"username": username, "product": "gofeeder", "status": "Belum Direset", "url": endpoint},
+                    headers={"X-API-KEY": f"{WEB_TOKEN_API}"}
+                )
+                print(request.json())
+                return {"status": "success"}
+            else:
+                browser.close()
+                request = requests.post(f"{WEB_APP_API}/api/update-credential-status",
+                    json={"username": username, "product": "gofeeder", "status": "Sudah Direset", "url": endpoint},
+                    headers={"X-API-KEY": f"{WEB_TOKEN_API}"}
+                )
+                print(request.json())
                 return {"status": "failure", "reason": "Invalid credentials"}
         except Exception as e:
             browser.close()
