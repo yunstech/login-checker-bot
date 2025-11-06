@@ -2,9 +2,9 @@ module.exports = {
   apps: [
     {
       name: "fastapi-app",
-      script: "uvicorn",
-      args: "main:app --host 0.0.0.0 --port 6666",
-      interpreter: "bash",
+      script: "./venv/bin/python",
+      args: "-m uvicorn main:app --host 0.0.0.0 --port 8686",
+      cwd: "/home/yunus/databreach/login-checker-bot",
       exec_mode: "fork",
       autorestart: true,
       watch: false,
@@ -14,23 +14,13 @@ module.exports = {
         ENVIRONMENT: "production",
       },
     },
-
-    {
-      name: "redis-server",
-      script: "redis-server",
-      args: "--port 6379",
-      autorestart: true,
-      watch: false,
-      exec_mode: "fork",
-      max_memory_restart: "300M",
-    },
-
     {
       name: "rq-worker",
-      script: "rq",
-      args: "worker default",
-      interpreter: "bash",
+      script: "./venv/bin/rq",
+      args: "worker",
+      cwd: "/home/yunus/databreach/login-checker-bot",
       exec_mode: "fork",
+      interpreter: "python",
       autorestart: true,
       watch: false,
       max_memory_restart: "500M",
