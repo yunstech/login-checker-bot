@@ -8,6 +8,7 @@ class CredentialRequest(BaseModel):
     password: str
     product: str
     endpoint: str
+    breach_id: int = None
 
 app = FastAPI()
 
@@ -24,7 +25,8 @@ async def check_credential(credentials: CredentialRequest):
         credentials.username, 
         credentials.password, 
         credentials.product, 
-        credentials.endpoint
+        credentials.endpoint,
+        credentials.breach_id
     )
 
     return {"job_id": job.get_id()}

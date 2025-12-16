@@ -38,15 +38,15 @@ PRODUCT_CONFIG = {
     }
 }
 
-def update_credential_status(username: str, product: str, status: str, url: str) -> Dict[str, Any]:
+def update_credential_status(username: str, product: str, status: str, url: str, breach_id: int) -> Dict[str, Any]:
     request = requests.post(
         f"{WEB_APP_API}/api/update-credential-status",
-        json={"username": username, "product": product, "status": status, "url": url},
+        json={"username": username, "product": product, "status": status, "url": url, "breach_id": breach_id},
         headers={"X-API-KEY": f"{WEB_TOKEN_API}"}
     )
     return request.json()
 
-def check_login(username: str, password: str, product: str, endpoint: str) -> Dict[str, Any]:
+def check_login(username: str, password: str, product: str, endpoint: str, breach_id: int = None) -> Dict[str, Any]:
     config = PRODUCT_CONFIG.get(product.lower())
     if not config:
         return {"status": "error", "reason": f"Unknown product: {product}"}
@@ -68,12 +68,12 @@ def check_login(username: str, password: str, product: str, endpoint: str) -> Di
             
             if is_success:
                 print("Login successful, proceeding to dashboard.")
-                result = update_credential_status(username, product, "Belum Direset", endpoint)
+                result = update_credential_status(username, product, "Belum Direset", endpoint, breach_id)
                 print(result)
                 return {"status": "success"}
             else:
                 browser.close()
-                result = update_credential_status(username, product, "Sudah Direset", endpoint)
+                result = update_credential_status(username, product, "Sudah Direset", endpoint, breach_id)
                 print(result)
                 return {"status": "failure", "reason": "Invalid credentials"}
         except Exception as e:
